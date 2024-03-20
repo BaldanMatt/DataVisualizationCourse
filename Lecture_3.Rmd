@@ -1,0 +1,151 @@
+---
+title: "Lecture_3 - Grammar of Graphics"
+output: html_notebook
+---
+
+# Grammar
+
+- standard way of describing graphics
+- understanding
+- put constraints
+- generalization
+
+## Generalization
+
+Components of a graph may be the graphical devices that allow to carry information.
+
+# Elements of the grammar
+
+There are overall 8 components:
+- DATA
+  Without data you cannot have any data visualization.
+  Data should be: *tidy*
+    - one variable per column
+    - one observation per row
+    - one value per cell
+
+- AESTHETIC MAPPINGS *(Case study is related to wooclap example)*
+  - GDP (gross domestic product) -> x axis
+  - Continent -> Color
+  - Population of country -> Size
+  - ....
+
+- GEOMETRIC OBJECTS
+  - Circles/Points
+  - Lines
+  - Polygons
+  - Bars
+  - ....
+
+>*N.B*: aesthetic variable are properties of geometric objects.
+
+- SCALES
+  map data values to aesthetic values
+  - invertible function  
+
+- STATISTICAL TRANSFORMATIONS
+  - average, median, kernel density estimation, ... and so on
+  - identity
+  - Regression models..
+
+- POSITION ADJUSTMENTS
+  - readibility
+  - stacked bar chart
+  
+- FACETING
+  - Many plots from different subsets of the data
+
+- COORDINATE SYSTEM
+  Mapping position of x and y scale to pixel position on the screen.
+  - Cartesian coordinate system
+  - Polar system
+  
+## LAYERS
+
+### Part of the layer
+A layer is composed of the following:
+- Data
+- Aesthetic mapping
+- Geom
+- Stat
+- Position
+  
+### Outside of the layer
+- Facet specification
+- Coordinate system
+- Scales
+
+# Examples
+  
+```{r}
+library(gapminder)
+library(ggplot2)
+library(tidyverse)
+```
+```{r}
+data <- gapminder::gapminder
+```
+
+```{r}
+data |> 
+  summarize(min(gdpPercap),
+            max(gdpPercap),
+            min(lifeExp),
+            max(lifeExp)
+            )
+```
+
+```{r}
+data |> 
+  filter(year==2007) |>
+  ggplot(aes(x=gdpPercap,
+             y=lifeExp,
+             size=pop,
+             color=continent)
+         ) +
+  geom_point(
+    mapping=aes(fill=continent),
+    shape=21,
+    alpha=0.2
+    ) +
+  geom_point(shape=21) +
+  scale_x_log10(labels=scales::label_dollar()) +
+  labs(
+    x="Gross domestic Prdouct per capita",
+    y="Life Expectancy",
+    fill="Continent",
+    color="Continent",
+    size="Population",
+    title="Rich people live longer",
+    caption="Data from gapminder.org"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right"
+  )
+```
+
+# Statistical summaries
+
+```{r}
+data |>
+  group_by(continent) |>
+  summarise(gdpPercap=mean(gdpPercap)) |>
+  ggplot(aes(x=continent,y=gdpPercap)) +
+  geom_col()
+```
+
+```{r}
+ggplot(gapminder, 
+       aes(x=continent,y=gdpPercap)) + 
+  geom_point(alpha=0.2, size=0.5, position = position_jitter()) +
+  stat_summary(
+    fun.data=mean_cl_boot,
+    color="red",
+    geom="linerange"
+  ) + 
+  scale_y_log10() +
+  theme_minimal()
+```
+  
+  

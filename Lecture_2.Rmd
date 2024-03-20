@@ -1,0 +1,104 @@
+---
+title: "Lecture 2"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+# LOADING DATA
+
+We will load the flights of 3 different airport in 2013 from NYC
+
+```{r}
+flights <- nycflights13::flights
+head(flights)
+```
+## FILTER
+
+```{r}
+filter(flights, month==3, day>=15)
+```
+## ARRANGE/SORTING
+
+```{r}
+arrange(flights,month, desc(dep_delay))
+```
+
+```{r}
+names(flights)
+```
+## SELECT
+
+```{r}
+select(flights, tailnum, dep_time)
+```
+
+## ADD NEW DATA by deriving information
+### MUTATE
+We want to add a column with the average speed in minutes
+```{r}
+mutate(flights, avg_speed = distance / air_time * 60)
+```
+
+### MUTATE with IFELSE
+
+```{r}
+my_flights <- select(flights, dep_delay)
+mutate(my_flights, if_else(dep_delay > 0,
+                           "delayed", # if true
+                           "on_time", # if else
+       ))
+```
+
+# SELECT COUNT * FROM ... GROUP BY ...
+This is an sql analogy.
+
+This is a first instance of aggregation.
+
+```{r}
+count(flights, month)
+flights_by_month <- group_by(flights, month)
+```
+
+# SUMMARIZE
+
+```{r}
+summarize(flights_by_month, avg_delay = mean(dep_delay, na.rm=TRUE))
+```
+
+```{r}
+flights |> group_by(month) |> summarise(avg_delay=mean(dep_delay, na.rm=TRUE))
+```
+
+# Exercise 1
+
+Compute the fraction of delay flights per month.
+
+```{r}
+flights |>
+  group_by(month) |>
+  select(month,dep_delay) |>
+  mutate(is_delayed = if_else(dep_delay>0,
+                 1, #if true
+                 0, #if false
+                 )) |>
+  summarise(fraction_delay_flights=mean(is_delayed, na.rm=TRUE))
+```
+
+# JOINS
+
+```{r}
+my_flights <- select(flights, year, origin, dest, tailnum)
+```
+```{r}
+planes <- nycflights13::planes
+my_planes <- select(planes, tailnum, year, manufacturer, model)
+```
+
+```{r}
+inner_join(my_flights, my_planes, by=c("tailnum"), suffix=c("_flight","_manufacture"))
+```
+
+
