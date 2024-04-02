@@ -1,0 +1,7 @@
+variable,category,correlation,pvalue
+A,F1,0.9,0.000000001
+B,F2,0.7,0.0000001
+C,F1,0.6,0.0001
+D,F3,0.22,0.15
+E,F3,0.2,0.12
+

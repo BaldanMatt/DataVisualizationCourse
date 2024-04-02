@@ -1,0 +1,25 @@
+---
+title: "Lecture 3 - Padlet exercise"
+output: html_notebook
+---
+# Preparing workspace
+```{r}
+library(tidyverse)
+```
+##Loading data
+```{r}
+corr_data <- as_tibble(read.csv("data/correlation_experiment.csv"))
+corr_data
+```
+
+# Padlet Plot
+```{r}
+TH = 0.05
+corr_data |> 
+  mutate(significance = ifelse(pvalue<=TH*1e-3, "***", ifelse(pvalue<=TH*1e-2,"**", ifelse(pvalue<=TH*1e-1,"*","")))) |>
+  ggplot(aes(x=variable,y=correlation,color=category, label=significance)) + 
+  geom_col(aes(fill=category),alpha=0.2) +
+  geom_text(nudge_y=0.05)
+```
+
+
