@@ -1,0 +1,179 @@
+---
+title: "Lecture 6 - Color"
+output: html_notebook
+---
+
+# Loading data and preparing workspace
+```{r}
+library("colorspace")
+library("viridis")
+library("RColorBrewer")
+library("ggthemes")
+```
+
+# 
+```{r}
+pal_viridis <- viridis::cividis(6)
+pal_set2 <- RColorBrewer::brewer.pal(6, "Set2")
+# Most used categorical palette
+pal_tableau <- ggthemes::tableau_color_pal()(6)
+pal_viridis
+```
+```{r}
+colorspace::swatchplot(
+  "Viridis" = pal_viridis,
+  "Brewer" = pal_set2,
+  "Tableau" = pal_tableau
+  )
+```
+## Assessing quantitatively palettes
+```{r}
+colorspace::specplot(pal_tableau)
+```
+
+## Assessing quality of palettes for color blind people
+```{r}
+pal_deu_tableau <- colorspace::deutan(pal_tableau)
+```
+```{r}
+pal_deu_tableau |>
+  colorspace::specplot()
+```
+```{r}
+colorspace::swatchplot(
+  "no cvd"=pal_tableau,
+  "cvd"=pal_deu_tableau
+)
+```
+###Protan blindness
+```{r}
+pal_viridis |>
+  protan() |>
+  specplot()
+```
+
+### Tritan blindness
+```{r}
+pal_viridis |>
+  tritan() |>
+  specplot()
+```
+## Grey-White 
+```{r}
+pal_viridis |>
+  desaturate(1) |>
+  specplot()
+```
+
+```{r}
+pal_tableau |>
+  desaturate(1) |>
+  specplot()
+```
+```{r}
+rainbow(6) |>
+  specplot()
+```
+
+# Quantitative assessment of contrast
+
+Contrast ratio: luminance of the color / luminance of the background
+
+What are good colors? Around 3 is lower bound
+
+```{r}
+colorspace::contrast_ratio(pal_viridis, col2="grey30", plot=TRUE)
+```
+# How can we fix tableau for blind people? 
+Therefore cathegorical data for blind people safe.
+```{r}
+# Okabe and Ito - Japanese professors inventors
+palette.colors(6) |>
+  desaturate(1) |>
+  specplot()
+```
+
+# Now we play
+```{r}
+pal_random <- c("#ff6f59", "#254441", "#43aa8b", "#b2b09b", "#ef3054")
+pal_random |>
+  specplot()
+```
+```{r}
+#Then you can define the following function:
+image_spec <- function(img_path, palette) {
+  p_image <- cowplot::ggdraw() +
+    cowplot::draw_image(img_path)
+
+  p_palette <- tibble(c = palette) |>
+    ggplot(aes(x=palette, y=0, fill=palette)) +
+    geom_tile(color="white", linewidth=4) +
+    coord_fixed() +
+    scale_fill_identity() +
+    theme_void()
+
+  plot_grid(p_palette, p_image, ncol=1)
+}
+```
+
+
+```{r}
+pal_dune <- c("#D96A6A","#8C4660","#592550","#F8AEA1","#260101")
+img_path <- "data/download.jpg"
+image_spec(img_path, pal_dune)
+```
+
+```{r}
+pal_dune |> 
+  desaturate(1) |>
+  specplot()
+```
+```{r}
+pal_burano <- c("#B6DBF2","#049DBF","#055902","#F2B705","#F2CDAC")
+img_path <- "data/images.jpg"
+image_spec(img_path, pal_burano)
+```
+# Another complicate palette
+```{r}
+base1 <- "#C91024"
+base2 <- "#1E8CE3"
+saturations <- c(0.0, 0.5, 1.0)
+lightenesses <- c(0.0, 0.3, 0.8)
+```
+```{r}
+base1 |>
+  desaturate(0.5) |>
+  lighten(0.3) |>
+  swatchplot()
+```
+```{r}
+color_base_tibble <- function(base, saturation, lightness){
+  tibble(c=base,
+         sat=saturation,
+         light=lightness) |>
+    transmute(
+      c=lighten(desaturate(c,sat),light),
+      c=fct_reorder(c, row_number())
+    )
+}
+```
+```{r}
+cols1 <- base1 |>
+  color_base_tibble(saturations, lightenesses) |>
+  rename(C1=c)
+base2 |>
+  color_base_tibble(saturations, lightenesses) |>
+  rename(C2=c)
+```
+
+```{r}
+blend_colors <- function(C1,C2){
+  hex(RGB(coords(hex2RGB(C1)) * coords(hex2RGB(c2)) ))
+}
+```
+```{r}
+
+```
+
+
+
